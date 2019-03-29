@@ -1,0 +1,41 @@
+getSymbols("TTWO", src = 'yahoo')
+return_TTWO <- log(TTWO$TTWO.Close/TTWO$TTWO.Open)
+return_seldata <- return_TTWO['2018-03-21/']
+mean <- mean(return_seldata)
+stddev <- sd(return_seldata)
+f_stock_return <- function(stock_price, n, stock_mu, stock_sigma){
+  delta_t <- 1/n # one period
+  for (i in seq(n)){
+    epsilon <- runif(n=1, min=0, max=1) # random generated number
+    # calculate stock price (using quantile function of normal distribution)
+    stock_price <- stock_price * (1 + qnorm(epsilon, 
+                                            stock_mu * delta_t, 
+                                            stock_sigma* sqrt(delta_t)))
+  }
+  return(stock_price)
+}
+
+# parameters
+
+simulations <- 10000 # number of MC simulations
+n <- 772 # trading days
+stock_price <- 96.37
+stock_mu <- mean - 0.5*stddev # drift 10%
+stock_sigma <- stddev # volatility 20%
+# Monte Carlo simulations
+set.seed(42) # for reproducibility
+stock_prices <- c()
+for (i in seq(simulations)){
+  stock_prices <- c(stock_prices,
+                    f_stock_return(stock_price=stock_price, 
+                                   n=n, 
+                                   stock_mu=stock_mu, 
+                                   stock_sigma=stock_sigma))
+}
+
+quantile(stock_prices,p = 0.05)
+
+
+hist(stock_prices, breaks = 100, col = "green")
+
+
